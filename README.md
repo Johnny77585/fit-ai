@@ -5,6 +5,36 @@
 
 AI 健身記錄 App：支援語音、照片與手動輸入。**React SPA** 前端 + **Laravel API** 後端。
 
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=white)](https://react.dev/)
+[![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?style=flat&logo=laravel&logoColor=white)](https://laravel.com/)
+[![Gemini](https://img.shields.io/badge/Gemini-AI-8E75B2?style=flat&logo=google)](https://ai.google.dev/)
+
+## 功能展示
+
+> 將截圖放入 `docs/screenshots/` 後，下方圖片會自動顯示（檔名需一致）。
+
+| 登入 / 首頁 | 語音或文字記錄 | AI 解析結果 |
+|:---:|:---:|:---:|
+| ![首頁](docs/screenshots/home.png) | ![記錄](docs/screenshots/record.png) | ![AI](docs/screenshots/ai-result.png) |
+
+*尚未加入截圖時，可執行 App 後用 Win+Shift+S 截圖，存成上述檔名。*
+
+## 專案亮點（面試用）
+
+| 主題 | 說明 |
+|------|------|
+| **前後端分離** | React SPA + Laravel REST API，Vite 開發時代理 `/api` 至後端 |
+| **認證與安全** | Laravel Sanctum、Fortify；Gemini API **僅在後端呼叫**，金鑰不進瀏覽器 |
+| **OAuth 實務** | Google 登入；callback 以 Token 回傳前端，解決 localhost 不同 port 的 Cookie 限制 |
+| **AI 整合** | 語音、器材照片、自然語言三種輸入，統一由後端呼叫 Gemini 結構化訓練資料 |
+| **資料模型** | 訓練紀錄、動作分類、動作庫 metadata 分表設計，支援 CRUD 與擴充 |
+
+**我負責的部分**（可依實際分工修改）：
+
+- 前後端架構規劃、API 設計與實作
+- 使用者註冊／登入、Google OAuth、Auth Context
+- AI 解析端點（voice / image / text）與前端整合
+
 ## 架構
 
 - **前端**：React 19、Vite、Tailwind CSS（`src/`）
@@ -139,6 +169,13 @@ fit-ai/
 ├── src/                 # React 前端
 │   ├── api/             # API 客戶端
 │   └── contexts/        # Auth 等 Context
+├── docs/screenshots/    # README 展示用截圖
 ├── vite.config.ts
 └── package.json
 ```
+
+## 作者
+
+**JKUO** · [GitHub @Johnny77585](https://github.com/Johnny77585) · [jkuo2188@gmail.com](mailto:jkuo2188@gmail.com)
+
+若此專案對你有幫助，歡迎 Star ⭐

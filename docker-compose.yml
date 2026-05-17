@@ -1,0 +1,27 @@
+services:
+  api:
+    image: laravelsail/php84-composer:latest
+    working_dir: /var/www/html
+    volumes:
+      - ./api:/var/www/html
+    ports:
+      - "8000:8000"
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    environment:
+      APP_ENV: local
+    depends_on:
+      - api-setup
+
+  api-setup:
+    image: laravelsail/php84-composer:latest
+    working_dir: /var/www/html
+    volumes:
+      - ./api:/var/www/html
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        if [ ! -f vendor/autoload.php ]; then composer install --no-interaction; fi
+        if [ -z "$$(grep '^APP_KEY=base64' .env 2>/dev/null)" ]; then php artisan key:generate --force; fi
+        php artisan migrate --force
+        touch storage/logs/laravel.log
+    restart: "no"

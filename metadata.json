@@ -1,0 +1,8 @@
+{
+  "name": "Fit AI",
+  "description": "AI-powered fitness tracker that records your workouts via voice, photo, or video. Simply speak or show your workout to log it.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

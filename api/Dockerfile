@@ -46,12 +46,17 @@ WORKDIR /var/www/html
 # Install PHP deps first for better layer caching.
 # COMPOSER_MEMORY_LIMIT=-1 avoids OOM on constrained build hosts (Render free tier).
 COPY composer.json composer.lock ./
-RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
+# Diagnostics: print PHP / Composer / installed extensions before installing.
+# --ignore-platform-reqs skips ext-* checks so we can isolate non-ext failures.
+RUN php -v && composer --version && php -m \
+    && COMPOSER_MEMORY_LIMIT=-1 composer install \
         --no-dev \
         --no-scripts \
         --no-interaction \
         --prefer-dist \
-        --optimize-autoloader
+        --optimize-autoloader \
+        --ignore-platform-reqs \
+        -vvv
 
 COPY . .
 

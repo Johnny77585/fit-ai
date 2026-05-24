@@ -34,7 +34,7 @@ services:
       - key: APP_URL
         sync: false
       - key: LOG_CHANNEL
-        value: stack
+        value: stderr
       - key: LOG_LEVEL
         value: warning
       - key: DB_CONNECTION

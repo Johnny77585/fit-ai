@@ -29,10 +29,15 @@ class AuthController extends Controller
         ]);
 
         $bootstrap->bootstrapForUser($user);
-        Auth::login($user);
-        $request->session()->regenerate();
 
-        // Issue a Sanctum token so cross-origin SPAs (e.g. GitHub Pages -> Render) can authenticate.
+        // Only touch the session-based guard when this request actually has a
+        // session — cross-origin SPAs (GitHub Pages → Render) skip Sanctum's
+        // stateful middleware and authenticate purely via the Bearer token below.
+        if ($request->hasSession()) {
+            Auth::login($user);
+            $request->session()->regenerate();
+        }
+
         $token = $user->createToken('spa')->plainTextToken;
 
         return response()->json([
@@ -48,15 +53,19 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        $request->session()->regenerate();
+        if ($request->hasSession()) {
+            Auth::login($user, $request->boolean('remember'));
+            $request->session()->regenerate();
+        }
 
-        $user = $request->user();
         $token = $user->createToken('spa')->plainTextToken;
 
         return response()->json([
@@ -75,9 +84,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'Logged out']);
         }
 
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($request->hasSession()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return response()->json(['message' => 'Logged out']);
     }

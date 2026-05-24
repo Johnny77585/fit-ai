@@ -6,6 +6,9 @@ const AUTH_TOKEN_KEY = 'fit_ai_auth_token';
 export const api = axios.create({
   baseURL,
   withCredentials: true,
+  // 60s timeout — Render free tier cold-starts can take ~30s on the first request.
+  // Without a timeout axios would hang forever if the backend is unreachable.
+  timeout: 60000,
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',

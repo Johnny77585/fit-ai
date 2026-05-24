@@ -38,7 +38,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" \
         /etc/apache2/sites-available/000-default.conf \
         /etc/apache2/apache2.conf \
-        /etc/apache2/conf-available/*.conf
+        /etc/apache2/conf-available/*.conf \
+    # Enable .htaccess (Laravel's public/.htaccess forwards the Authorization
+    # header to PHP — without AllowOverride All, Sanctum can't see the
+    # `Authorization: Bearer ...` header and every request returns 401).
+    && sed -ri -e 's!AllowOverride None!AllowOverride All!g' \
+        /etc/apache2/apache2.conf
 
 # Composer (multi-stage copy from official image)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

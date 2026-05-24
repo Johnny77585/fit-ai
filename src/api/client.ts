@@ -34,7 +34,12 @@ export function clearAuthToken(): void {
 
 export async function initCsrf(): Promise<void> {
   if (getAuthToken()) return;
-  await axios.get('/sanctum/csrf-cookie', {
-    withCredentials: true,
-  });
+  // Cross-origin deploys (e.g. GitHub Pages -> Render) use token auth only;
+  // CSRF cookie is only needed when frontend and backend share the same origin/root domain.
+  if (import.meta.env.PROD) return;
+  try {
+    await axios.get('/sanctum/csrf-cookie', { withCredentials: true });
+  } catch {
+    // Swallow: token-based login below still works even if CSRF cookie isn't reachable.
+  }
 }

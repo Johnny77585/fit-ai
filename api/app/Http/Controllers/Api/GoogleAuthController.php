@@ -9,6 +9,18 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
 {
+    /**
+     * FRONTEND_URL may be a comma-separated list (for CORS multi-origin support).
+     * OAuth needs a single absolute URL to redirect back to, so take the first entry.
+     */
+    private function primaryFrontendUrl(): string
+    {
+        $raw = (string) config('app.frontend_url', 'http://localhost:3000');
+        $first = trim(explode(',', $raw)[0] ?? '');
+
+        return rtrim($first !== '' ? $first : 'http://localhost:3000', '/');
+    }
+
     public function config()
     {
         $clientId = config('services.google.client_id');
@@ -22,7 +34,7 @@ class GoogleAuthController extends Controller
     public function redirect()
     {
         if (! filled(config('services.google.client_id')) || ! filled(config('services.google.client_secret'))) {
-            $frontend = rtrim(config('app.frontend_url', 'http://localhost:3000'), '/');
+            $frontend = $this->primaryFrontendUrl();
 
             return redirect("{$frontend}/?auth_error=google_not_configured");
         }
@@ -62,7 +74,7 @@ class GoogleAuthController extends Controller
         // Session on :8000 is not visible to the SPA on :3000 — pass a Sanctum token instead.
         $token = $user->createToken('google-login')->plainTextToken;
 
-        $frontend = rtrim(config('app.frontend_url', 'http://localhost:3000'), '/');
+        $frontend = $this->primaryFrontendUrl();
 
         return redirect("{$frontend}/?auth=success&token=".urlencode($token));
     }

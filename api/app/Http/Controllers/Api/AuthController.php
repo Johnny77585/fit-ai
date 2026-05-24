@@ -32,8 +32,12 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
+        // Issue a Sanctum token so cross-origin SPAs (e.g. GitHub Pages -> Render) can authenticate.
+        $token = $user->createToken('spa')->plainTextToken;
+
         return response()->json([
             'user' => new UserResource($user),
+            'token' => $token,
         ], 201);
     }
 
@@ -52,8 +56,12 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        $user = $request->user();
+        $token = $user->createToken('spa')->plainTextToken;
+
         return response()->json([
-            'user' => new UserResource($request->user()),
+            'user' => new UserResource($user),
+            'token' => $token,
         ]);
     }
 

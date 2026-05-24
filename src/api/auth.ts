@@ -9,19 +9,24 @@ export async function register(
 ): Promise<ApiUser> {
   clearAuthToken();
   await initCsrf();
-  const { data } = await api.post<{ user: ApiUser }>('/register', {
+  const { data } = await api.post<{ user: ApiUser; token?: string }>('/register', {
     name,
     email,
     password,
     password_confirmation: passwordConfirmation,
   });
+  if (data.token) setAuthToken(data.token);
   return data.user;
 }
 
 export async function login(email: string, password: string): Promise<ApiUser> {
   clearAuthToken();
   await initCsrf();
-  const { data } = await api.post<{ user: ApiUser }>('/login', { email, password });
+  const { data } = await api.post<{ user: ApiUser; token?: string }>('/login', {
+    email,
+    password,
+  });
+  if (data.token) setAuthToken(data.token);
   return data.user;
 }
 

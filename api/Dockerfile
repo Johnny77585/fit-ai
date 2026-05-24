@@ -1,7 +1,9 @@
 # Laravel 11 production image for Render.
-# Uses PHP 8.2 + Apache. Apache rewrites to /public/index.php for Laravel.
+# Uses PHP 8.4 + Apache. Apache rewrites to /public/index.php for Laravel.
+# 8.4 matches the local dev image (laravelsail/php84-composer) so composer.lock
+# (which pulled in Symfony v8 components requiring PHP >= 8.4) installs cleanly.
 
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
@@ -46,17 +48,12 @@ WORKDIR /var/www/html
 # Install PHP deps first for better layer caching.
 # COMPOSER_MEMORY_LIMIT=-1 avoids OOM on constrained build hosts (Render free tier).
 COPY composer.json composer.lock ./
-# Diagnostics: print PHP / Composer / installed extensions before installing.
-# --ignore-platform-reqs skips ext-* checks so we can isolate non-ext failures.
-RUN php -v && composer --version && php -m \
-    && COMPOSER_MEMORY_LIMIT=-1 composer install \
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
         --no-dev \
         --no-scripts \
         --no-interaction \
         --prefer-dist \
-        --optimize-autoloader \
-        --ignore-platform-reqs \
-        -vvv
+        --optimize-autoloader
 
 COPY . .
 

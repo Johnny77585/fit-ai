@@ -8,14 +8,27 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         unzip \
+        curl \
         libzip-dev \
         libpng-dev \
         libonig-dev \
         libxml2-dev \
         libsqlite3-dev \
         libpq-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libicu-dev \
     && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install pdo pdo_mysql pdo_pgsql pdo_sqlite mbstring zip bcmath \
+    && docker-php-ext-install \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        pdo_sqlite \
+        mbstring \
+        zip \
+        bcmath \
+        intl \
+        opcache \
     && a2enmod rewrite headers
 
 # Point Apache to Laravel's /public folder. Use double quotes so $APACHE_DOCUMENT_ROOT
@@ -30,9 +43,15 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Install PHP deps first for better layer caching
+# Install PHP deps first for better layer caching.
+# COMPOSER_MEMORY_LIMIT=-1 avoids OOM on constrained build hosts (Render free tier).
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
+        --no-dev \
+        --no-scripts \
+        --no-interaction \
+        --prefer-dist \
+        --optimize-autoloader
 
 COPY . .
 

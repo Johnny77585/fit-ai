@@ -18,8 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql pdo_sqlite mbstring zip bcmath \
     && a2enmod rewrite headers
 
-# Point Apache to Laravel's /public folder
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
+# Point Apache to Laravel's /public folder. Use double quotes so $APACHE_DOCUMENT_ROOT
+# expands at build time (Apache config doesn't expand env vars by default).
+RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" \
         /etc/apache2/sites-available/000-default.conf \
         /etc/apache2/apache2.conf \
         /etc/apache2/conf-available/*.conf
@@ -45,6 +46,8 @@ ENV PORT=10000
 EXPOSE 10000
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Strip Windows CRLF in case the file was committed with CRLF line endings.
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
 
 CMD ["/usr/local/bin/entrypoint.sh"]

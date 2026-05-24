@@ -39,10 +39,12 @@ services:
         value: warning
       - key: DB_CONNECTION
         value: pgsql
+      # DB_HOST is set manually in the dashboard to the EXTERNAL hostname
+      # (e.g. dpg-xxxx-a.oregon-postgres.render.com), because the API service
+      # and the database may live in different regions, in which case the
+      # short internal hostname auto-filled by `fromDatabase` won't resolve.
       - key: DB_HOST
-        fromDatabase:
-          name: fit-ai-db
-          property: host
+        sync: false
       - key: DB_PORT
         fromDatabase:
           name: fit-ai-db
